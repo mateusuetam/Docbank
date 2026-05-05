@@ -30,7 +30,7 @@ public class DocbankDAO {
 
       return sb.toString();
     } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException("Erro ao processar criptografia da senha", e);
+      throw new RuntimeException("Ocorreu um erro ao tentar processar criptografia da senha: " + e.getMessage(), e);
     }
   }
 
@@ -43,8 +43,7 @@ public class DocbankDAO {
       stmt.setString(4, cargo);
       return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      System.err.println("Ocorreu um erro ao tentar realizar o cadastro do usuário no banco de dados: " + e.getMessage());
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar realizar o cadastro do usuário: " + e.getMessage(), e);
     }
   }
 
@@ -56,8 +55,7 @@ public class DocbankDAO {
         return rs.next();
       }
     } catch (SQLException e) {
-      System.err.println("Ocorreu um erro ao tentar verificar o email fornecido no banco de dados: " + e.getMessage());
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar verificar o email fornecido: " + e.getMessage(), e);
     }
   }
 
@@ -81,7 +79,7 @@ public class DocbankDAO {
         }
       }
     } catch (SQLException e) {
-      System.err.println("Ocorreu um erro ao autenticar o login no banco de dados: " + e.getMessage());
+      throw new RuntimeException("Ocorreu um erro ao tentar autenticar o login: " + e.getMessage(), e);
     }
     return null;
   }
@@ -94,7 +92,7 @@ public class DocbankDAO {
         lista.add(new Usuario(rs.getInt("id"), rs.getString("nome"), rs.getString("email"), rs.getString("cargo"), null));
       }
     } catch (SQLException e) {
-      System.err.println("Ocorreu um erro ao buscar informações dos usuários no banco de dados: " + e.getMessage());
+      throw new RuntimeException("Ocorreu um erro ao tentar buscar informações dos usuários: " + e.getMessage(), e);
     }
     return lista;
   }
@@ -106,8 +104,7 @@ public class DocbankDAO {
       stmt.setInt(2, idUsuario);
       return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      System.err.println("Ocorreu um erro ao alterar o cargo do usuário no banco de dados: " + e.getMessage());
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar alterar o cargo do usuário: " + e.getMessage(), e);
     }
   }
 
@@ -117,7 +114,7 @@ public class DocbankDAO {
       stmt.setInt(1, id);
       return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar excluir o usuário: " + e.getMessage(), e);
     }
   }
 
@@ -129,7 +126,7 @@ public class DocbankDAO {
       stmt.setString(3, identificador);
       return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar salvar o documento: " + e.getMessage(), e);
     }
   }
 
@@ -144,7 +141,7 @@ public class DocbankDAO {
       if (e.getErrorCode() == 1062) {
         throw new RuntimeException("Este documento já está nos seus favoritos.");
       } else {
-        throw new RuntimeException("Ocorreu um erro de comunicação com o banco de dados: " + e.getMessage());
+        throw new RuntimeException("Ocorreu um erro ao tentar favoritar o documento: " + e.getMessage(), e);
       }
     }
   }
@@ -168,7 +165,7 @@ public class DocbankDAO {
         }
       }
     } catch (SQLException e) {
-      System.err.println("Ocorreu um erro ao acessar os documentos favoritos no banco de dados: " + e.getMessage());
+      throw new RuntimeException("Ocorreu um erro ao tentar acessar os documentos favoritos: " + e.getMessage(), e);
     }
     return lista;
   }
@@ -180,7 +177,7 @@ public class DocbankDAO {
       stmt.setInt(2, idDocumento);
       return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar remover o documento dos favoritos: " + e.getMessage(), e);
     }
   }
 
@@ -201,7 +198,7 @@ public class DocbankDAO {
         }
       }
     } catch (SQLException e) {
-      return lista;
+      throw new RuntimeException("Ocorreu um erro ao tentar buscar documentos por status: " + e.getMessage(), e);
     }
     return lista;
   }
@@ -212,7 +209,7 @@ public class DocbankDAO {
       stmt.setInt(1, id);
       return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar aprovar o documento: "+ e.getMessage(), e);
     }
   }
 
@@ -224,7 +221,7 @@ public class DocbankDAO {
       stmt.setInt(3, id);
       stmt.executeUpdate();
     } catch (SQLException e) {
-      throw new RuntimeException("Ocorreu um erro ao atualizar o documento no banco de dados: ", e);
+      throw new RuntimeException("Ocorreu um erro ao tentar atualizar o documento: " + e.getMessage(), e);
     }
   }
 
@@ -234,7 +231,7 @@ public class DocbankDAO {
       stmt.setInt(1, id);
       return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
-      return false;
+      throw new RuntimeException("Ocorreu um erro ao tentar excluir o documento: " + e.getMessage(), e);
     }
   }
 }

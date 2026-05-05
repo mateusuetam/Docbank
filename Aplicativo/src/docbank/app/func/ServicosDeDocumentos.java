@@ -11,11 +11,12 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
-* Classe responsável por operações em cima dos documentos
-* @author Mateus
-* @version 1.0
-* @since Primeira versão
-*/
+ * Classe responsável por operações em cima dos documentos
+ *
+ * @author Mateus
+ * @version 1.0
+ * @since Primeira versão
+ */
 public class ServicosDeDocumentos {
 
   public static final Path PASTA_REVISAO = Paths.get("pdfs", "Revisao");
@@ -36,44 +37,32 @@ public class ServicosDeDocumentos {
 
     dao.salvarDocumento(titulo, topico, identificador);
   }
-  
-    public static void abrirDocumento(String linkOuArquivo, Path pastaRaiz) {
-    String os = System.getProperty("os.name").toLowerCase();
+
+  public static void abrirDocumento(String linkOuArquivo, Path pasta) {
+    boolean checagemDePdf = linkOuArquivo.toLowerCase().endsWith(".pdf");
+    String alvo;
+
+    if (checagemDePdf) {
+      alvo = pasta.resolve(linkOuArquivo).toAbsolutePath().toString();
+    } else if (linkOuArquivo.startsWith("http://") || linkOuArquivo.startsWith("https://")) {
+      alvo = linkOuArquivo;
+    } else {
+      alvo = "https://" + linkOuArquivo;
+    }
 
     try {
 
-      if (os.contains("linux")) {
-        String alvo;
-        if (linkOuArquivo.toLowerCase().endsWith(".pdf")) {
-          alvo = pastaRaiz.resolve(linkOuArquivo).toAbsolutePath().toString();
+      if (java.awt.Desktop.isDesktopSupported()) {
+        java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+        if (checagemDePdf) {
+          desktop.open(new java.io.File(alvo));
         } else {
-          alvo = linkOuArquivo.startsWith("http") ? linkOuArquivo : "https://" + linkOuArquivo;
-        }
-
-        new ProcessBuilder("xdg-open", alvo).start();
-
-      } else {
-
-        if (linkOuArquivo.toLowerCase().endsWith(".pdf")) {
-          java.io.File arquivo = pastaRaiz.resolve(linkOuArquivo).toFile();
-
-          if (arquivo.exists()) {
-            java.awt.Desktop.getDesktop().open(arquivo);
-          } else {
-            javax.swing.JOptionPane.showMessageDialog(null, "Não foi possível encontrar o arquivo: " + arquivo.getAbsolutePath());
-          }
-        } else {
-          String url = linkOuArquivo.startsWith("http") ? linkOuArquivo : "https://" + linkOuArquivo;
-
-          if (java.awt.Desktop.isDesktopSupported()) {
-            java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
-          } else if (os.contains("win")) {
-            new ProcessBuilder("cmd", "/c", "start", url).start();
-          }
+          desktop.browse(new java.net.URI(alvo));
         }
       }
+
     } catch (IOException | URISyntaxException e) {
-      javax.swing.JOptionPane.showMessageDialog(null, "Houve um erro ao tentar abrir o arquivo: " + e.getMessage());
+      javax.swing.JOptionPane.showMessageDialog(null, "Ocorreu um erro ao tentar abrir o documento: " + e.getMessage());
     }
   }
 
@@ -92,7 +81,7 @@ public class ServicosDeDocumentos {
   }
 
   public void excluir(Documento doc) throws IOException {
-    
+
     dao.excluirDocumento(doc.getId());
 
     if (doc.getLinkOuArquivo() != null && doc.getLinkOuArquivo().toLowerCase().endsWith(".pdf")) {
