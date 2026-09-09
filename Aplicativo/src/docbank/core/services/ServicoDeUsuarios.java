@@ -3,8 +3,7 @@ package docbank.core.services;
 import docbank.core.domain.Usuario;
 import docbank.core.ports.UsuarioDAO;
 import docbank.core.utils.PasswordUtil;
-
-import java.util.Arrays;
+import docbank.core.utils.UsuarioValidadorUtil;
 import java.util.List;
 
 public class ServicoDeUsuarios {
@@ -16,7 +15,7 @@ public class ServicoDeUsuarios {
     }
 
     public Usuario autenticar(String email, char[] senha) {
-        if (email == null || email.trim().isEmpty() || senha == null || senha.length == 0) {
+        if (!UsuarioValidadorUtil.isPreenchido(email) || !UsuarioValidadorUtil.isSenhaPreenchida(senha)) {
             throw new IllegalArgumentException("E-mail e senha são obrigatórios para autenticação.");
         }
 
@@ -33,21 +32,19 @@ public class ServicoDeUsuarios {
     }
 
     public void cadastrarNovoUsuario(String nome, String email, char[] senha, String cargo) {
-        if (nome == null || nome.trim().isEmpty()) {
+        if (!UsuarioValidadorUtil.isPreenchido(nome)) {
             throw new IllegalArgumentException("O nome é obrigatório.");
         }
-
-        String regexEmail = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        if (email == null || email.trim().isEmpty() || !email.trim().matches(regexEmail)) {
+        if (!UsuarioValidadorUtil.isEmailValido(email)) {
             throw new IllegalArgumentException("Um e-mail válido é obrigatório (ex: seu.nome@dominio.com).");
         }
-        if (senha == null || senha.length == 0) {
+        if (!UsuarioValidadorUtil.isSenhaPreenchida(senha)) {
             throw new IllegalArgumentException("A senha é obrigatória.");
         }
-        if (senha.length < 8) {
+        if (!UsuarioValidadorUtil.isSenhaTemTamanhoMinimo(senha)) {
             throw new IllegalArgumentException("A senha deve ter no mínimo 8 caracteres.");
         }
-        if (cargo == null || cargo.trim().isEmpty()) {
+        if (!UsuarioValidadorUtil.isPreenchido(cargo)) {
             throw new IllegalArgumentException("O cargo do usuário é obrigatório.");
         }
         if (usuarioDAO.existeEmail(email.trim())) {
@@ -67,16 +64,14 @@ public class ServicoDeUsuarios {
     }
 
     public void alterarCargo(int idUser, String novoCargo) {
-        if (idUser <= 0) {
+        if (!UsuarioValidadorUtil.isIdValido(idUser)) {
             throw new IllegalArgumentException("ID de usuário inválido.");
         }
-        if (novoCargo == null || novoCargo.trim().isEmpty()) {
+        if (!UsuarioValidadorUtil.isPreenchido(novoCargo)) {
             throw new IllegalArgumentException("O novo cargo é obrigatório.");
         }
-
-        List<String> cargosPermitidos = Arrays.asList("Usuário", "Moderador", "Administrador", "Suspenso");
-        if (!cargosPermitidos.contains(novoCargo.trim())) {
-            throw new IllegalArgumentException("Cargo inválido. Cargos permitidos: " + cargosPermitidos);
+        if (!UsuarioValidadorUtil.isCargoPermitido(novoCargo)) {
+            throw new IllegalArgumentException("Cargo inválido. Cargos permitidos: " + UsuarioValidadorUtil.getCargosPermitidos());
         }
 
         boolean sucesso = usuarioDAO.alterarCargo(idUser, novoCargo.trim());
@@ -86,9 +81,10 @@ public class ServicoDeUsuarios {
     }
 
     public void excluirUsuario(int idUser) {
-        if (idUser <= 0) {
+        if (!UsuarioValidadorUtil.isIdValido(idUser)) {
             throw new IllegalArgumentException("ID de usuário inválido.");
         }
+
         boolean sucesso = usuarioDAO.excluir(idUser);
         if (!sucesso) {
             throw new IllegalStateException("Usuário não encontrado para exclusão.");
