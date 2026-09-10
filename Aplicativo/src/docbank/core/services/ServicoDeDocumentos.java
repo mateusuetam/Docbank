@@ -3,6 +3,7 @@ package docbank.core.services;
 import docbank.core.domain.Documento;
 import docbank.core.ports.DocumentoDAO;
 import docbank.core.ports.FileStorage;
+import docbank.core.utils.DocumentoValidadorUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -18,24 +19,20 @@ public class ServicoDeDocumentos {
     }
 
     public void salvarNovoDoc(String titulo, String topico, String link, File arquivo) throws IOException {
-        if (titulo == null || titulo.trim().isEmpty()) {
+        if (!DocumentoValidadorUtil.isPreenchido(titulo)) {
             throw new IllegalArgumentException("O título do documento é obrigatório.");
         }
-        if (topico == null || topico.trim().isEmpty()) {
+        if (!DocumentoValidadorUtil.isPreenchido(topico)) {
             throw new IllegalArgumentException("O tópico do documento é obrigatório.");
         }
-        if ((link == null || link.trim().isEmpty()) && arquivo == null) {
+        if (!DocumentoValidadorUtil.isLinkOuArquivoPresente(link, arquivo)) {
             throw new IllegalArgumentException("É necessário informar um link ou anexar um arquivo PDF.");
         }
-
-        if (arquivo != null && !arquivo.getName().toLowerCase().endsWith(".pdf")) {
+        if (arquivo != null && !DocumentoValidadorUtil.isArquivoPdf(arquivo)) {
             throw new IllegalArgumentException("Apenas arquivos no formato PDF são permitidos.");
         }
-
-        if (link != null && !link.trim().isEmpty()) {
-            if (!link.startsWith("http://") && !link.startsWith("https://")) {
-                throw new IllegalArgumentException("O link deve começar com http:// ou https://");
-            }
+        if (DocumentoValidadorUtil.isPreenchido(link) && !DocumentoValidadorUtil.isLinkValido(link)) {
+            throw new IllegalArgumentException("O link deve começar com http:// ou https://");
         }
 
         String identificador = link;
@@ -50,7 +47,7 @@ public class ServicoDeDocumentos {
     }
 
     public void aprovar(Documento doc) throws IOException {
-        if (doc == null) {
+        if (!DocumentoValidadorUtil.isDocumentoPreenchido(doc)) {
             throw new IllegalArgumentException("Documento não pode ser nulo.");
         }
 
@@ -59,13 +56,13 @@ public class ServicoDeDocumentos {
             throw new IllegalStateException("O documento informado não foi encontrado para aprovação.");
         }
 
-        if (ehPdf(doc.getLinkOuArquivo())) {
+        if (DocumentoValidadorUtil.ehPdf(doc.getLinkOuArquivo())) {
             fileStorage.moverParaAprovados(doc.getLinkOuArquivo());
         }
     }
 
     public void excluir(Documento doc) throws IOException {
-        if (doc == null) {
+        if (!DocumentoValidadorUtil.isDocumentoPreenchido(doc)) {
             throw new IllegalArgumentException("Documento não pode ser nulo.");
         }
 
@@ -74,26 +71,26 @@ public class ServicoDeDocumentos {
             throw new IllegalStateException("O documento informado não foi encontrado para exclusão.");
         }
 
-        if (ehPdf(doc.getLinkOuArquivo())) {
+        if (DocumentoValidadorUtil.ehPdf(doc.getLinkOuArquivo())) {
             fileStorage.excluirArquivos(doc.getLinkOuArquivo());
         }
     }
 
     public List<Documento> listarPorStatus(String status) {
-        if (status == null || (!status.trim().equalsIgnoreCase("revisao") && !status.trim().equalsIgnoreCase("aprovado"))) {
+        if (!DocumentoValidadorUtil.isStatusPermitido(status)) {
             throw new IllegalArgumentException("Status inválido. Use 'revisao' ou 'aprovado'.");
         }
         return documentoDAO.listarPorStatus(status.trim().toLowerCase());
     }
 
     public void atualizarInformacoes(int id, String novoTitulo, String novoTopico) {
-        if (id <= 0) {
+        if (!DocumentoValidadorUtil.isIdValido(id)) {
             throw new IllegalArgumentException("ID de documento inválido.");
         }
-        if (novoTitulo == null || novoTitulo.trim().isEmpty()) {
+        if (!DocumentoValidadorUtil.isPreenchido(novoTitulo)) {
             throw new IllegalArgumentException("O novo título é obrigatório.");
         }
-        if (novoTopico == null || novoTopico.trim().isEmpty()) {
+        if (!DocumentoValidadorUtil.isPreenchido(novoTopico)) {
             throw new IllegalArgumentException("O novo tópico é obrigatório.");
         }
 
@@ -101,21 +98,21 @@ public class ServicoDeDocumentos {
     }
 
     public void favoritar(int idUsuario, int idDoc) {
-        if (idUsuario <= 0 || idDoc <= 0) {
+        if (!DocumentoValidadorUtil.isIdValido(idUsuario) || !DocumentoValidadorUtil.isIdValido(idDoc)) {
             throw new IllegalArgumentException("IDs de usuário ou documento inválidos.");
         }
         documentoDAO.adicionarFavorito(idUsuario, idDoc);
     }
 
     public List<Documento> listarFavoritos(int idUsuario) {
-        if (idUsuario <= 0) {
+        if (!DocumentoValidadorUtil.isIdValido(idUsuario)) {
             throw new IllegalArgumentException("ID de usuário inválido.");
         }
         return documentoDAO.listarFavoritos(idUsuario);
     }
 
     public void removerFavorito(int idUsuario, int idDoc) {
-        if (idUsuario <= 0 || idDoc <= 0) {
+        if (!DocumentoValidadorUtil.isIdValido(idUsuario) || !DocumentoValidadorUtil.isIdValido(idDoc)) {
             throw new IllegalArgumentException("IDs de usuário ou documento inválidos.");
         }
 
@@ -123,9 +120,5 @@ public class ServicoDeDocumentos {
         if (!sucesso) {
             throw new IllegalStateException("Não foi possível remover o documento dos favoritos. Ele pode já ter sido removido.");
         }
-    }
-
-    private boolean ehPdf(String identificador) {
-        return identificador != null && identificador.toLowerCase().endsWith(".pdf");
     }
 }
