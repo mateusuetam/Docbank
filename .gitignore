@@ -1,5 +1,2 @@
-build/
-driver/
-**/nbproject/private/
-**/pdfs/
-/Aplicativo/dist/
+pdfs/
+target/
