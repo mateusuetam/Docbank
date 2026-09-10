@@ -12,7 +12,8 @@ Sistema de gerenciamento de documentos PDF e links, com controle de acesso basea
 
 ## 💻 Tecnologias
 
-Em seu estado atual, o projeto foi desenvolvido utilizando **Java** e **SQL**.
+Em seu estado atual, o projeto foi desenvolvido utilizando **Java**, **SQL** e tem sua build feita via **Maven**.
+O projeto também implementa as dependências mysql-connector-j e junit-jupiter para conectividade com banco de dados e realização de testes.
 
 À medida que o projeto evoluir e novas tecnologias forem incorporadas, este documento será atualizado para refletir as ferramentas e tecnologias utilizadas.
 
@@ -138,10 +139,6 @@ Aplicativo/src/docbank/infra/database/Conexao.java
 
 Altere o valor da `String` de conexão denominada `PASS` e informe a senha necessária para autenticar o acesso ao banco de dados.
 
-### 4. 📦 Driver JDBC
-
-> **Importante:** é necessário possuir o **driver JDBC do MySQL** para que a aplicação consiga estabelecer uma conexão com o banco de dados. Sem o driver, a comunicação com o banco não será realizada.
-
 ## ▶️ Execução
 
 Após concluir as etapas de configuração, a aplicação estará preparada para ser executada e estabelecer comunicação com o banco de dados.
@@ -151,7 +148,6 @@ Certifique-se de que:
 * O servidor MySQL esteja em execução;
 * O banco de dados tenha sido configurado corretamente;
 * As credenciais de acesso estejam corretas;
-* O driver JDBC do MySQL esteja disponível para a aplicação.
 
 ---
 
